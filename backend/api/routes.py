@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from agents.repo_agent import clone_repository
 from agents.test_agent import run_tests
+from agents.fix_agent import apply_fix
 
 router = APIRouter()
 
@@ -17,6 +18,11 @@ class RepoRequest(BaseModel):
 
 class TestRequest(BaseModel):
     repo_path: str
+
+
+class FixRequest(BaseModel):
+    repo_path: str
+    failure: dict
 
 
 # =========================
@@ -48,4 +54,14 @@ def clone_repo(data: RepoRequest):
 @router.post("/run-tests")
 def run_repo_tests(data: TestRequest):
     result = run_tests(data.repo_path)
+    return result
+
+
+# =========================
+# APPLY FIX ENDPOINT
+# =========================
+
+@router.post("/apply-fix")
+def fix_code(data: FixRequest):
+    result = apply_fix(data.repo_path, data.failure)
     return result
