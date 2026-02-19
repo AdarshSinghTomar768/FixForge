@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+import json
+import os
 
 from agents.repo_agent import clone_repository
 from agents.test_agent import run_tests
@@ -84,3 +86,25 @@ def run_autonomous_agent(data: LoopRequest):
         data.max_retries
     )
     return result
+
+
+# =========================
+# LIVE RESULTS POLLING ENDPOINT
+# =========================
+
+@router.get("/results")
+def get_results():
+    try:
+        results_path = os.path.join("results", "results.json")
+
+        if not os.path.exists(results_path):
+            return {"status": "no_results"}
+
+        with open(results_path, "r") as f:
+            return json.load(f)
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
