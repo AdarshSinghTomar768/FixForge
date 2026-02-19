@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual env
+venv/
+.env
+
+# Agent cloned repos
+backend/cloned_repos/
+
+# OS files
+.DS_Store
