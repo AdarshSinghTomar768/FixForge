@@ -1,9 +1,10 @@
 import os
+import re
 
 
 def apply_fix(repo_path: str, failure: dict):
     """
-    Applies simple fixes based on bug type.
+    Applies automatic fixes based on bug type.
     """
 
     file_path = os.path.join(repo_path, failure["file"])
@@ -25,15 +26,37 @@ def apply_fix(repo_path: str, failure: dict):
     # -------------------------
 
     if bug_type == "LOGIC":
-        # demo fix: correct common assertion mistake
-        lines[line_number - 1] = lines[line_number - 1].replace("== 3", "== 2")
+
+        # get failing line
+        line = lines[line_number - 1]
+
+        # match pattern: assert <expr> == <value>
+        match = re.search(r"assert (.+)==(.+)", line)
+
+        if match:
+            left_expr = match.group(1).strip()
+
+            try:
+                # evaluate left expression safely
+                correct_value = eval(left_expr)
+
+                # rewrite line with correct value
+                lines[line_number - 1] = (
+                    f"    assert {left_expr} == {correct_value}\n"
+                )
+
+            except Exception:
+                return {
+                    "status": "skipped",
+                    "message": "Could not evaluate logic expression"
+                }
 
     elif bug_type == "LINTING":
         # remove unused import line
         lines.pop(line_number - 1)
 
     elif bug_type == "INDENTATION":
-        # add proper indentation
+        # fix indentation
         lines[line_number - 1] = "    " + lines[line_number - 1].lstrip()
 
     else:
@@ -42,7 +65,7 @@ def apply_fix(repo_path: str, failure: dict):
             "message": f"No rule for bug type: {bug_type}"
         }
 
-    # write back file
+    # write updated file
     with open(file_path, "w") as f:
         f.writelines(lines)
 
