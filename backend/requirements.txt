@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pydantic
+gitpython
+pytest
+pytz
